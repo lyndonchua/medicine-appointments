@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2357c6">
+  <title>Medicine & Important Matters Tracker</title>
+  <style>
+    *{box-sizing:border-box;font-family:Arial,sans-serif} body{margin:0;min-height:100vh;background:linear-gradient(135deg,#eef5ff,#f5f0ff,#effcf4);color:#182033}
+    .app{max-width:1100px;margin:auto;padding:14px;display:flex;flex-direction:column;gap:12px} h1{text-align:center;margin:6px 0;font-size:29px;color:#26324d}
+    .date{text-align:center;color:#5d6980;font-weight:700;margin-top:-5px}.panel{background:rgba(255,255,255,.94);border-radius:24px;padding:18px;box-shadow:0 10px 28px rgba(24,32,51,.10)}
+    .tabs,.buttons{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tabs{justify-content:center;margin-bottom:16px}button{border:0;border-radius:999px;padding:10px 15px;font-size:15px;cursor:pointer;background:#edf1fb;color:#20283a;box-shadow:0 3px 9px #00000010}
+    button:hover{background:#dfe8ff}button.selected{background:#376cf0;color:#fff;font-weight:800}.tab{font-size:16px}.tab.selected{background:#243f88}.section{margin:0 0 16px}.section-title{font-weight:800;margin-bottom:8px}
+    .summary{background:#eef4ff;border-left:6px solid #4d7cff;border-radius:14px;padding:12px;margin-bottom:16px;line-height:1.55}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    label{display:block;font-size:13px;color:#566176;font-weight:700;margin:0 0 5px}input,select,textarea{width:100%;padding:11px;border:1px solid #cbd3e1;border-radius:12px;font-size:16px;background:white}textarea{min-height:72px;resize:vertical}
+    .save{flex:1 1 230px;background:#178a4b;color:#fff;font-weight:800;font-size:17px;border-radius:14px;padding:14px}.clear{background:#f2b94b;font-weight:800;border-radius:14px}.status{margin-top:11px;padding:10px;border-radius:12px;background:#f6f7fb;color:#4f5a70;font-size:14px}
+    .safety{background:#fff8e5;border-left:6px solid #eba900;border-radius:14px;padding:11px;margin-bottom:14px;font-size:13px;line-height:1.45}.records-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.records-head h2{margin:0;font-size:23px}.record-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .record{border:1px solid #e0e6f0;border-radius:16px;padding:12px;background:#fbfcff}.record-top{display:grid;grid-template-columns:1fr auto;gap:8px}.record-name{font-size:17px;font-weight:800}.pill{padding:6px 9px;border-radius:999px;font-weight:800;font-size:13px;background:#e8efff;color:#244bc7;white-space:nowrap}.meta{color:#64748b;font-size:13px;margin-top:5px;line-height:1.45}.taken{color:#108442}.planned{color:#b26800}.skipped{color:#b42318}.danger{color:#b42318}.empty{text-align:center;padding:24px;color:#777}.hidden{display:none!important}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}.panel{padding:14px;border-radius:20px}h1{font-size:23px}.records-head{align-items:flex-start;flex-direction:column}.record-top{grid-template-columns:1fr auto}}
+  </style>
+</head>
+<body>
+<main class="app">
+  <h1>⏰ Medicine & Important Matters</h1>
+  <div class="date" id="today"></div>
+  <section class="panel">
+    <div class="tabs"><button id="medicineTab" class="tab selected">💊 Medicine</button><button id="matterTab" class="tab">📌 Important Matter</button></div>
+    <div class="safety"><strong>Safety:</strong> This app records what you enter; it does not decide whether a medicine or dose is safe. Follow your doctor or the medicine label. Check that other products do not contain the same active ingredient as Panadol. Viagra must not be combined with nitrate medicines.</div>
+    <div class="summary" id="summary">Choose an item and enter its time.</div>
+
+    <div id="medicineForm">
+      <div class="section"><div class="section-title">1. Medicine or supplement</div><div class="buttons" id="medicineButtons"></div></div>
+      <div class="section"><label for="customMedicine">Other medicine or supplement</label><input id="customMedicine" placeholder="Type here"></div>
+      <div class="grid section">
+        <div><label for="dose">Dose / amount (optional)</label><input id="dose" placeholder="e.g. 1 tablet, 500 mg"></div>
+        <div><label for="medStatus">Status</label><select id="medStatus"><option>Taken</option><option>Planned</option><option>Skipped</option></select></div>
+      </div>
+    </div>
+
+    <div id="matterForm" class="hidden">
+      <div class="section"><div class="section-title">1. Type of important matter</div><div class="buttons" id="matterButtons"></div></div>
+      <div class="grid section">
+        <div><label for="title">Short title</label><input id="title" placeholder="e.g. Orthopaedic review"></div>
+        <div><label for="priority">Priority</label><select id="priority"><option>Important</option><option>Urgent</option><option>Routine</option></select></div>
+      </div>
+    </div>
+
+    <div class="grid section">
+      <div><label for="dateInput">2. Date</label><input type="date" id="dateInput"></div>
+      <div><label for="timeInput">3. Time</label><input type="time" id="timeInput"></div>
+    </div>
+    <div class="section"><label for="notes">Notes (optional)</label><textarea id="notes" placeholder="Instructions, reason, location or other details"></textarea></div>
+    <div class="buttons"><button class="save" id="saveBtn">Save Record</button><button class="clear" id="clearBtn">Clear</button></div>
+    <div class="status" id="status">Ready.</div>
+  </section>
+
+  <section class="panel">
+    <div class="records-head"><h2>Recent & Upcoming Records</h2><select id="filter" style="width:auto"><option value="all">All</option><option value="medicine">Medicine only</option><option value="matter">Important matters only</option></select></div>
+    <div id="recordList"></div>
+  </section>
+</main>
+
+<script type="module">
+  import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import{getFirestore,collection,addDoc,onSnapshot,query,orderBy,limit,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  const firebaseConfig={apiKey:"AIzaSyCn2h_SEwcIHVHYiTbScvcpmU7waIXfrnc",authDomain:"dog-walking-tracker-67ece.firebaseapp.com",projectId:"dog-walking-tracker-67ece",storageBucket:"dog-walking-tracker-67ece.firebasestorage.app",messagingSenderId:"620019383368",appId:"1:620019383368:web:a2d499575011464f08ec7d"};
+  const medicines=["Multivitamin","Vitamin C","Melatonin","Omega 3","Panadol","Viagra","Other"];
+  const matters=["Medical appointment","Medicine refill","Insurance / claim","Bill / payment","Voucher / points expiry","Return / warranty deadline","School / work deadline","Document renewal","Other"];
+  let mode="medicine",selected="",records=[],db=null;
+  const $=id=>document.getElementById(id); const esc=s=>String(s??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+  const localDate=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`};
+  const currentTime=()=>{const now=new Date();return `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`};
+  function niceDate(v){if(!v)return"—";return new Date(v+"T00:00:00").toLocaleDateString("en-SG",{weekday:"short",day:"numeric",month:"short",year:"numeric"})}
+  function setStatus(s){$("status").textContent=s}
+  function choiceButtons(id,items){$(id).innerHTML=items.map(x=>`<button class="${selected===x?"selected":""}" data-choice="${esc(x)}">${esc(x)}</button>`).join("");$(id).querySelectorAll("button").forEach(b=>b.onclick=()=>{selected=b.dataset.choice;renderChoices();summary()})}
+  function renderChoices(){choiceButtons("medicineButtons",medicines);choiceButtons("matterButtons",matters)}
+  function setMode(next){mode=next;selected="";$("medicineTab").classList.toggle("selected",mode==="medicine");$("matterTab").classList.toggle("selected",mode==="matter");$("medicineForm").classList.toggle("hidden",mode!=="medicine");$("matterForm").classList.toggle("hidden",mode!=="matter");$("saveBtn").textContent=mode==="medicine"?"Save Medicine Record":"Save Important Matter";renderChoices();summary()}
+  function medicineName(){return $("customMedicine").value.trim()||selected}
+  function summary(){const name=mode==="medicine"?medicineName():($("title").value||selected);$("summary").innerHTML=`<strong>${mode==="medicine"?"Medicine":"Important matter"}</strong><br>${esc(name||"Not selected")} · ${esc(niceDate($("dateInput").value))} · ${esc($("timeInput").value||"No time")}`}
+  function reset(){selected="";$("customMedicine").value="";$("dose").value="";$("medStatus").value="Taken";$("title").value="";$("priority").value="Important";$("dateInput").value=localDate(new Date());$("timeInput").value=currentTime();$("notes").value="";renderChoices();summary()}
+  function validate(){if(mode==="medicine"&&!medicineName())return alert("Please select a medicine or type one in the blank box."),false;if(mode==="matter"&&!selected)return alert("Please select a matter type."),false;if(mode==="matter"&&!$("title").value.trim())return alert("Please enter a short title."),false;if(!$("dateInput").value)return alert("Please select a date."),false;if(!$("timeInput").value)return alert("Please select a time."),false;return true}
+  async function save(){if(!validate())return;const name=mode==="medicine"?medicineName():$("title").value.trim();const data={kind:mode,category:mode==="medicine"?name:selected,title:name,date:$("dateInput").value,time:$("timeInput").value,dose:mode==="medicine"?$("dose").value.trim():"",status:mode==="medicine"?$("medStatus").value:$("priority").value,notes:$("notes").value.trim(),createdAt:serverTimestamp()};try{await addDoc(collection(db,"medicineAndMatters"),data);setStatus("Saved. Records will sync across devices.");reset()}catch(e){setStatus("Save failed: "+e.message)}}
+  function renderRecords(){const filter=$("filter").value;const list=records.filter(r=>filter==="all"||r.kind===filter);if(!list.length){$("recordList").innerHTML='<div class="empty">No records yet.</div>';return}$("recordList").innerHTML='<div class="record-list">'+list.map(r=>`<article class="record"><div class="record-top"><div><div class="record-name">${r.kind==="medicine"?"💊":"📌"} ${esc(r.title||r.category)}</div><div class="meta">${esc(r.category)}${r.dose?" · "+esc(r.dose):""}<br>${r.notes?esc(r.notes):"No notes"}</div></div><div class="pill ${String(r.status).toLowerCase()}">${esc(r.status||"")}</div></div><div class="meta"><strong>📅 ${esc(niceDate(r.date))} at ${esc(r.time||"—")}</strong></div></article>`).join("")+"</div>"}
+  function init(){try{db=getFirestore(initializeApp(firebaseConfig));const q=query(collection(db,"medicineAndMatters"),orderBy("createdAt","desc"),limit(100));onSnapshot(q,s=>{records=s.docs.map(d=>({id:d.id,...d.data()}));renderRecords();setStatus("Live sync active.")},e=>setStatus("Live sync failed: "+e.message))}catch(e){setStatus("Connection error: "+e.message)}}
+  $("medicineTab").onclick=()=>setMode("medicine");$("matterTab").onclick=()=>setMode("matter");$("saveBtn").onclick=save;$("clearBtn").onclick=reset;$("filter").onchange=renderRecords;["dateInput","timeInput","title","customMedicine"].forEach(id=>$(id).addEventListener("input",summary));
+  $("today").textContent=new Date().toLocaleDateString("en-SG",{weekday:"long",day:"numeric",month:"long",year:"numeric"});reset();setMode("medicine");init();
+</script>
+</body>
+</html>
